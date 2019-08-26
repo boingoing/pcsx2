@@ -37,69 +37,53 @@ Dialogs::AboutBoxDialog::AboutBoxDialog(wxWindow* parent)
 		wxDefaultPosition, wxDefaultSize
 		)
 {
-	// [TODO] : About box should be upgraded to use scrollable read-only text boxes.
-
-	wxString developsString = wxsFormat(
-		L"avih, Refraction, rama, pseudonym, gregory.hainaut, turtleli"
-		L"\n\n"
-		L"%s: \n"
-		L"Arcum42, Aumatt, drk||raziel, "
-		L"cottonvibes, gigaherz, saqib, "
-		L"\n"
-		L"Alexey Silinov, Florin, "
-		L"goldfinger, Linuzappz, loser, "
-		L"Nachbrenner, shadow, Zerofrog, tmkk, Jake.Stine"
-		L"\n\n"
-		L"%s:\n"
-		L"Falcon4ever, Bositman, Akasha",
-		_("Previous versions"), _("Webmasters"));
-
-	wxString contribsString = wxsFormat(
-		L"ssakash, FlatOut, CK1, lightningterror, atomic83github, Pandubz, Prafull, Blyss Sarania, Nobbs66, Alessandro Vetere"
-		L"\n\n"
-		L"%s: \n"
-		L"ChickenLiver (Lilypad), Gabest (GSdx, Cdvdolio, Xpad), Ckemu, "
-		L"General Plot, KrossX, Devina, micove, black_wd, Belmont, "
-		L"\n"
-		L"BGome, _Demo_, Dreamtime, Hiryu and Sjeep, nneeve, F|RES, "
-		L"Shadow Lady, MrBrown, razorblade, Seta-san, Skarmeth, feal87, Athos"
-		L"\n",
-		_("Previous versions"));
-
-	wxFlexGridSizer& boxesContainer = *new wxFlexGridSizer(2, 0, StdPadding);
-	boxesContainer.AddGrowableCol(0, 1);
-	boxesContainer.AddGrowableCol(1, 1);
-
-	wxStaticBoxSizer& developsBox = *new wxStaticBoxSizer(wxVERTICAL, this);
-	wxStaticBoxSizer& contribsBox = *new wxStaticBoxSizer(wxVERTICAL, this);
-
-	pxStaticText& developsText = Text(developsString).SetMinWidth(350);
-	pxStaticText& contribsText = Text(contribsString).SetMinWidth(350);
-
-	developsBox += Heading(_("Developers")).Bold() | StdExpand();
-	developsBox += developsText | StdExpand();
-	contribsBox += Heading(_("Contributors")).Bold() | StdExpand();
-	contribsBox += contribsText | StdExpand();
-
-	boxesContainer += developsBox | StdExpand();
-	boxesContainer += contribsBox | StdExpand();
-
 	// Main layout
+
+	SetMinWidth(450);
+
 	*this += m_bitmap_logo | StdCenter();
 
 	*this += Text(_("PlayStation 2 Emulator"));
 
 	*this += new wxHyperlinkCtrl(this, wxID_ANY,
-		_("PCSX2 Official Website and Forums"), L"https://pcsx2.net"
+		_("Main Website"), L"https://pcsx2.net"
 		) | pxProportion(1).Center().Border(wxALL, 3);
 
 	*this += new wxHyperlinkCtrl(this, wxID_ANY,
-		_("PCSX2 Official Git Repository at GitHub"), L"https://github.com/PCSX2/pcsx2"
+		_("Support Forums"), L"https://forums.pcsx2.net"
+	) | pxProportion(1).Center().Border(wxALL, 3);
+
+	*this += new wxHyperlinkCtrl(this, wxID_ANY,
+		_("Git Repository at GitHub"), L"https://github.com/PCSX2/pcsx2"
 		) | pxProportion(1).Center().Border(wxALL, 3);
 
-	*this += boxesContainer | StdCenter();
+	*this += new wxHyperlinkCtrl(this, wxID_ANY,
+		_("Contributors"), L"https://github.com/PCSX2/pcsx2/graphs/contributors"
+	) | pxProportion(1).Center().Border(wxALL, 3);
 
-	wxButton& closeButton = *new wxButton(this, wxID_OK, _("I've seen enough"));
+	*this += new wxHyperlinkCtrl(this, wxID_ANY,
+		_("License"), L"https://github.com/PCSX2/pcsx2/blob/master/COPYING.GPLv2"
+	) | pxProportion(2).Center().Border(wxALL, 3);
+
+	*this += Text(_("Social media links:"));
+
+	*this += new wxHyperlinkCtrl(this, wxID_ANY,
+		_("Facebook Page"), L"https://www.facebook.com/Pcsx2-145051045565631"
+		) | pxProportion(1).Center().Border(wxALL, 3);
+
+	*this += new wxHyperlinkCtrl(this, wxID_ANY,
+		_("Facebook Group"), L"https://www.facebook.com/groups/98483509559"
+	) | pxProportion(1).Center().Border(wxALL, 3);
+
+	*this += new wxHyperlinkCtrl(this, wxID_ANY,
+		_("Twitter Page"), L"https://twitter.com/PCSX2"
+		) | pxProportion(1).Center().Border(wxALL, 3);
+
+	*this += new wxHyperlinkCtrl(this, wxID_ANY,
+		_("Youtube Channel"), L"https://www.youtube.com/channel/UC-gDRnHdVMrgUndopJgtVSA"
+		) | pxProportion(2).Center().Border(wxALL, 3);
+
+	wxButton& closeButton = *new wxButton(this, wxID_OK, _("Close"));
 	closeButton.SetFocus();
 	*this += closeButton | StdCenter();
 

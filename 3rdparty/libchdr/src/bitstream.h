@@ -30,6 +30,7 @@ struct bitstream
 	uint32_t          dlength;      /* length of the data */
 };
 
+void				init_bitstream(struct bitstream* bitbuf, const void* src, uint32_t srclength);
 struct bitstream* 	create_bitstream(const void *src, uint32_t srclength);
 int 				bitstream_overflow(struct bitstream* bitstream);
 uint32_t 			bitstream_read_offset(struct bitstream* bitstream);

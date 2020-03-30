@@ -76,6 +76,7 @@ struct huffman_decoder* create_huffman_decoder(int numcodes, int maxbits);
 
 /* single item operations */
 uint32_t huffman_decode_one(struct huffman_decoder* decoder, struct bitstream* bitbuf);
+enum huffman_error huffman_decode(struct huffman_decoder* decoder, struct bitstream* bitbuf, const uint8_t* source, uint32_t slength, uint8_t* dest, uint32_t dlength);
 
 enum huffman_error huffman_import_tree_rle(struct huffman_decoder* decoder, struct bitstream* bitbuf);
 enum huffman_error huffman_import_tree_huffman(struct huffman_decoder* decoder, struct bitstream* bitbuf);

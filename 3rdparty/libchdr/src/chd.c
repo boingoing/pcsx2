@@ -254,6 +254,22 @@ struct _cdfl_codec_data {
 	uint8_t*	buffer;
 };
 
+/* codec-private data for the FLAC codec */
+typedef struct _flac_codec_data flac_codec_data;
+struct _flac_codec_data {
+	/* internal state */
+	int		big_endian;
+	flac_decoder	decoder;
+};
+
+/* codec-private data for the Huffman codec */
+typedef struct _huff_codec_data huff_codec_data;
+struct _huff_codec_data {
+	/* internal state */
+	struct huffman_decoder* decoder;
+	struct bitstream* bitbuf;
+};
+
 /* internal representation of an open CHD file */
 struct _chd_file
 {
@@ -277,6 +293,9 @@ struct _chd_file
 	const codec_interface *	codecintf[4];	/* interface to the codec */
 
 	zlib_codec_data			zlib_codec_data;		/* zlib codec data */
+	lzma_codec_data			lzma_codec_data;		/* lzma codec data */
+	flac_codec_data			flac_codec_data;		/* flac codec data */
+	huff_codec_data			huff_codec_data;		/* huff codec data */
 	cdzl_codec_data			cdzl_codec_data;		/* cdzl codec data */
 	cdlz_codec_data			cdlz_codec_data;		/* cdlz codec data */
 	cdfl_codec_data			cdfl_codec_data;		/* cdfl codec data */
@@ -346,6 +365,11 @@ static chd_error lzma_codec_init(void *codec, uint32_t hunkbytes);
 static void lzma_codec_free(void *codec);
 static chd_error lzma_codec_decompress(void *codec, const uint8_t *src, uint32_t complen, uint8_t *dest, uint32_t destlen);
 
+/* huffman compression codec */
+static chd_error huff_codec_init(void* codec, uint32_t hunkbytes);
+static void huff_codec_free(void* codec);
+static chd_error huff_codec_decompress(void* codec, const uint8_t* src, uint32_t complen, uint8_t* dest, uint32_t destlen);
+
 /* cdzl compression codec */
 static chd_error cdzl_codec_init(void* codec, uint32_t hunkbytes);
 static void cdzl_codec_free(void* codec);
@@ -360,6 +384,11 @@ static chd_error cdlz_codec_decompress(void *codec, const uint8_t *src, uint32_t
 static chd_error cdfl_codec_init(void* codec, uint32_t hunkbytes);
 static void cdfl_codec_free(void* codec);
 static chd_error cdfl_codec_decompress(void *codec, const uint8_t *src, uint32_t complen, uint8_t *dest, uint32_t destlen);
+
+/* flac compression codec */
+static chd_error flac_codec_init(void* codec, uint32_t hunkbytes);
+static void flac_codec_free(void* codec);
+static chd_error flac_codec_decompress(void* codec, const uint8_t* src, uint32_t complen, uint8_t* dest, uint32_t destlen);
 
 /***************************************************************************
  *  LZMA ALLOCATOR HELPER
@@ -689,9 +718,42 @@ chd_error cdzl_codec_decompress(void *codec, const uint8_t *src, uint32_t comple
 }
 
 /***************************************************************************
- *  CD FLAC DECOMPRESSOR
+ *  HUFFMAN DECOMPRESSOR
  ***************************************************************************
  */
+
+chd_error huff_codec_init(void* codec, uint32_t hunkbytes)
+{
+	huff_codec_data* huff = (huff_codec_data*)codec;
+	huff->decoder = create_huffman_decoder(256, 16);
+
+	if (!huff->decoder)
+		return CHDERR_DECOMPRESSION_ERROR;
+
+	huff->bitbuf = create_bitstream(NULL, 0);
+
+	return CHDERR_NONE;
+}
+
+chd_error huff_codec_decompress(void* codec, const uint8_t* src, uint32_t complen, uint8_t* dest, uint32_t destlen)
+{
+	huff_codec_data* huff = (huff_codec_data*)codec;
+
+	if (huffman_decode(huff->decoder, huff->bitbuf, src, complen, dest, destlen) != HUFFERR_NONE)
+		return CHDERR_COMPRESSION_ERROR;
+
+	return CHDERR_NONE;
+}
+
+void huff_codec_free(void* codec)
+{
+	huff_codec_data* huff = (huff_codec_data*)codec;
+
+	free(huff->bitbuf);
+	free(huff->decoder->lookup);
+	free(huff->decoder->huffnode);
+	free(huff->decoder);
+}
 
 /*------------------------------------------------------
  *  cdfl_codec_blocksize - return the optimal block size
@@ -707,6 +769,57 @@ static uint32_t cdfl_codec_blocksize(uint32_t bytes)
 		hunkbytes /= 2;
 	return hunkbytes;
 }
+
+/***************************************************************************
+ *  FLAC DECOMPRESSOR
+ ***************************************************************************
+ */
+chd_error flac_codec_init(void* codec, uint32_t hunkbytes)
+{
+	flac_codec_data* flac = (flac_codec_data*)codec;
+
+	/* determine whether we want native or swapped samples */
+	uint16_t native_endian = 0;
+	*(uint8_t*)(&native_endian) = 1;
+	flac->big_endian = (native_endian == 0x100);
+
+	/* flac decoder init */
+	flac_decoder_init(&flac->decoder);
+	return CHDERR_NONE;
+}
+
+chd_error flac_codec_decompress(void* codec, const uint8_t* src, uint32_t complen, uint8_t* dest, uint32_t destlen)
+{
+	flac_codec_data* flac = (flac_codec_data*)codec;
+
+	// determine the endianness
+	int swap_endian;
+	if (src[0] == 'L')
+		swap_endian = flac->big_endian;
+	else if (src[0] == 'B')
+		swap_endian = !flac->big_endian;
+	else
+		return CHDERR_DECOMPRESSION_ERROR;
+
+	if (!flac_decoder_reset(&flac->decoder, 44100, 2, cdfl_codec_blocksize(destlen), src + 1, complen - 1))
+		return CHDERR_DECOMPRESSION_ERROR;
+	if (!flac_decoder_decode_interleaved(&flac->decoder, (int16_t*)(dest), destlen / 4, swap_endian))
+		return CHDERR_DECOMPRESSION_ERROR;
+	uint32_t offset = flac_decoder_finish(&flac->decoder);
+
+	return CHDERR_NONE;
+}
+
+void flac_codec_free(void* codec)
+{
+	flac_codec_data* flac = (flac_codec_data*)codec;
+	flac_decoder_free(&flac->decoder);
+}
+
+/***************************************************************************
+ *  CD FLAC DECOMPRESSOR
+ ***************************************************************************
+ */
 
 chd_error cdfl_codec_init(void *codec, uint32_t hunkbytes)
 {
@@ -841,6 +954,39 @@ static const codec_interface codec_interfaces[] =
 		zlib_codec_init,
 		zlib_codec_free,
 		zlib_codec_decompress,
+		NULL
+	},
+
+	/* V5 lzma compression */
+	{
+		CHD_CODEC_LZMA,
+		"lzma (Deflate)",
+		FALSE,
+		lzma_codec_init,
+		lzma_codec_free,
+		lzma_codec_decompress,
+		NULL
+	},
+
+	/* V5 huffman compression */
+	{
+		CHD_CODEC_HUFF,
+		"huffman (Deflate)",
+		FALSE,
+		huff_codec_init,
+		huff_codec_free,
+		huff_codec_decompress,
+		NULL
+	},
+
+	/* V5 flac compression */
+	{
+		CHD_CODEC_FLAC,
+		"flac (FLAC)",
+		FALSE,
+		flac_codec_init,
+		flac_codec_free,
+		flac_codec_decompress,
 		NULL
 	},
 
@@ -1301,8 +1447,11 @@ chd_error chd_open_file(core_file *file, int mode, chd_file *parent, chd_file **
 		EARLY_EXIT(err = CHDERR_UNSUPPORTED_VERSION);
 
 	/* if we need a parent, make sure we have one */
+	/* pcsx2:boingoing - Disabling parent check since flags seem to sometimes indicate
+	                     parent relationship when there definitely isn't one. We don't
+	                     support parent chd in pcsx2 anyway.
 	if (parent == NULL && (newchd->header.flags & CHDFLAGS_HAS_PARENT))
-		EARLY_EXIT(err = CHDERR_REQUIRES_PARENT);
+		EARLY_EXIT(err = CHDERR_REQUIRES_PARENT);*/
 
 	/* make sure we have a valid parent */
 	if (parent != NULL)
@@ -1394,6 +1543,18 @@ chd_error chd_open_file(core_file *file, int mode, chd_file *parent, chd_file **
 				{
 					case CHD_CODEC_ZLIB:
 						codec = &newchd->zlib_codec_data;
+						break;
+
+					case CHD_CODEC_LZMA:
+						codec = &newchd->lzma_codec_data;
+						break;
+
+					case CHD_CODEC_FLAC:
+						codec = &newchd->flac_codec_data;
+						break;
+
+					case CHD_CODEC_HUFF:
+						codec = &newchd->huff_codec_data;
 						break;
 
 					case CHD_CODEC_CD_ZLIB:
@@ -1507,6 +1668,18 @@ void chd_close(chd_file *chd)
 
 				case CHD_CODEC_ZLIB:
 					codec = &chd->zlib_codec_data;
+					break;
+
+				case CHD_CODEC_LZMA:
+					codec = &chd->lzma_codec_data;
+					break;
+
+				case CHD_CODEC_FLAC:
+					codec = &chd->flac_codec_data;
+					break;
+
+				case CHD_CODEC_HUFF:
+					codec = &chd->huff_codec_data;
 					break;
 
 				case CHD_CODEC_CD_ZLIB:
@@ -2119,6 +2292,18 @@ static chd_error hunk_read_into_memory(chd_file *chd, UINT32 hunknum, UINT8 *des
 
 					case CHD_CODEC_ZLIB:
 						codec = &chd->zlib_codec_data;
+						break;
+
+					case CHD_CODEC_LZMA:
+						codec = &chd->lzma_codec_data;
+						break;
+
+					case CHD_CODEC_FLAC:
+						codec = &chd->flac_codec_data;
+						break;
+
+					case CHD_CODEC_HUFF:
+						codec = &chd->huff_codec_data;
 						break;
 
 					case CHD_CODEC_CD_ZLIB:

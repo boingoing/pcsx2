@@ -18,6 +18,15 @@
 
 int bitstream_overflow(struct bitstream* bitstream) { return ((bitstream->doffset - bitstream->bits / 8) > bitstream->dlength); }
 
+void init_bitstream(struct bitstream* bitbuf, const void* src, uint32_t srclength)
+{
+	bitbuf->buffer = 0;
+	bitbuf->bits = 0;
+	bitbuf->read = (const uint8_t*)src;
+	bitbuf->doffset = 0;
+	bitbuf->dlength = srclength;
+}
+
 /*-------------------------------------------------
  *  create_bitstream - constructor
  *-------------------------------------------------
@@ -26,11 +35,7 @@ int bitstream_overflow(struct bitstream* bitstream) { return ((bitstream->doffse
 struct bitstream* create_bitstream(const void *src, uint32_t srclength)
 {
 	struct bitstream* bitstream = (struct bitstream*)malloc(sizeof(struct bitstream));
-	bitstream->buffer = 0;
-	bitstream->bits = 0;
-	bitstream->read = (const uint8_t*)src;
-	bitstream->doffset = 0;
-	bitstream->dlength = srclength;
+	init_bitstream(bitstream, src, srclength);
 	return bitstream;
 }
 

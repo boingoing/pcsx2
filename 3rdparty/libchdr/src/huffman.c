@@ -159,6 +159,21 @@ uint32_t huffman_decode_one(struct huffman_decoder* decoder, struct bitstream* b
 	return lookup >> 5;
 }
 
+enum huffman_error huffman_decode(struct huffman_decoder* decoder, struct bitstream* bitbuf, const uint8_t* source, uint32_t slength, uint8_t* dest, uint32_t dlength)
+{
+	// first import the tree
+	init_bitstream(bitbuf, source, slength);
+	enum huffman_error err = huffman_import_tree_huffman(decoder, bitbuf);
+	if (err != HUFFERR_NONE)
+		return err;
+
+	// then decode the data
+	for (uint32_t cur = 0; cur < dlength; cur++)
+		dest[cur] = huffman_decode_one(decoder, bitbuf);
+	bitstream_flush(bitbuf);
+	return bitstream_overflow(bitbuf) ? HUFFERR_INPUT_BUFFER_TOO_SMALL : HUFFERR_NONE;
+}
+
 /*-------------------------------------------------
  *  import_tree_rle - import an RLE-encoded
  *  huffman tree from a source data stream

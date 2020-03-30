@@ -16,19 +16,29 @@ typedef int32_t INT32;
 typedef int16_t INT16;
 typedef int8_t INT8;
 
+#if !defined __MINGW32__
+#define fseeko _fseeki64
+#define ftello _ftelli64
+#else /* MinGW */
+#if !defined(HAVE_FSEEKO)
+#define fseeko fseeko64
+#define ftello ftello64
+#endif
+#endif
+
 #define core_file FILE
 #define core_fopen(file) fopen(file, "rb")
-#define core_fseek fseek
+#define core_fseek fseeko
 #define core_fread(fc, buff, len) fread(buff, 1, len, fc)
 #define core_fclose fclose
-#define core_ftell ftell
+#define core_ftell ftello
 static size_t core_fsize(core_file *f)
 {
-    long p = ftell(f);
-    fseek(f, 0, SEEK_END);
-    long rv = ftell(f);
-    fseek(f, p, SEEK_SET);
-    return rv;
+	size_t p = core_ftell(f);
+	core_fseek(f, 0, SEEK_END);
+	size_t rv = core_ftell(f);
+	core_fseek(f, p, SEEK_SET);
+	return rv;
 }
 
 #endif

@@ -27,7 +27,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{81DA1E73-420B-4519-916D-03E96623AA73}</ProjectGuid>
+    <ProjectGuid>{2DA996B7-2D2C-38CF-A580-41AB7043DA59}</ProjectGuid>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
@@ -54,37 +54,24 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <PreprocessorDefinitions>FLAC__NO_DLL;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;WIN32;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>deps\crypto;..\lzma\C;..\zlib;..\libflac\include;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_WINDOWS;_7ZIP_ST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src/bitstream.c" />
-    <ClCompile Include="src/cdrom.c" />
-    <ClCompile Include="src/chd.c" />
-    <ClCompile Include="src/flac.c" />
-    <ClCompile Include="src/huffman.c" />
-    <ClCompile Include="deps/crypto/md5.c" />
-    <ClCompile Include="deps/crypto/sha1.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="src/coretypes.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="CMakeLists.txt" />
-    <None Include="LICENSE.txt" />
-    <None Include="README.md" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\zlib\zlib.vcxproj">
-      <Project>{2f6c0388-20cb-4242-9f6c-a6ebb6a83f47}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\libflac\libflac.vcxproj">
-      <Project>{37abe35a-c0ef-324a-a998-871d913a4418}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\lzma\lzma.vcxproj">
-      <Project>{2da996b7-2d2c-38cf-a580-41ab7043da59}</Project>
-    </ProjectReference>
+    <ClCompile Include="C\Alloc.c" />
+    <ClCompile Include="C\Bra86.c" />
+    <ClCompile Include="C\Bra.c" />
+    <ClCompile Include="C\BraIA64.c" />
+    <ClCompile Include="C\CpuArch.c" />
+    <ClCompile Include="C\Delta.c" />
+    <ClCompile Include="C\LzFind.c" />
+    <ClCompile Include="C\Lzma86Dec.c" />
+    <ClCompile Include="C\Lzma86Enc.c" />
+    <ClCompile Include="C\LzmaDec.c" />
+    <ClCompile Include="C\LzmaEnc.c" />
+    <ClCompile Include="C\LzmaLib.c" />
+    <ClCompile Include="C\Sort.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

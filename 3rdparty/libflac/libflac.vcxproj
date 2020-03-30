@@ -27,7 +27,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{81DA1E73-420B-4519-916D-03E96623AA73}</ProjectGuid>
+    <ProjectGuid>{37ABE35A-C0EF-324A-A998-871D913A4418}</ProjectGuid>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
@@ -54,37 +54,39 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <PreprocessorDefinitions>FLAC__NO_DLL;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;WIN32;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>deps\crypto;..\lzma\C;..\zlib;..\libflac\include;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>PACKAGE_VERSION="1.3.3";FLAC__NO_DLL;FLAC__HAS_X86INTRIN=1;FLAC__HAS_OGG=0;HAVE_LROUND;HAVE_STDINT_H;HAVE_STDLIB_H;_CRT_NONSTDC_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;WIN32;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>include;src\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src/bitstream.c" />
-    <ClCompile Include="src/cdrom.c" />
-    <ClCompile Include="src/chd.c" />
-    <ClCompile Include="src/flac.c" />
-    <ClCompile Include="src/huffman.c" />
-    <ClCompile Include="deps/crypto/md5.c" />
-    <ClCompile Include="deps/crypto/sha1.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="src/coretypes.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="CMakeLists.txt" />
-    <None Include="LICENSE.txt" />
-    <None Include="README.md" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\zlib\zlib.vcxproj">
-      <Project>{2f6c0388-20cb-4242-9f6c-a6ebb6a83f47}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\libflac\libflac.vcxproj">
-      <Project>{37abe35a-c0ef-324a-a998-871d913a4418}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\lzma\lzma.vcxproj">
-      <Project>{2da996b7-2d2c-38cf-a580-41ab7043da59}</Project>
-    </ProjectReference>
+    <ClCompile Include="src\bitmath.c" />
+    <ClCompile Include="src\bitreader.c" />
+    <ClCompile Include="src\bitwriter.c" />
+    <ClCompile Include="src\cpu.c" />
+    <ClCompile Include="src\crc.c" />
+    <ClCompile Include="src\fixed.c" />
+    <ClCompile Include="src\fixed_intrin_sse2.c" />
+    <ClCompile Include="src\fixed_intrin_ssse3.c" />
+    <ClCompile Include="src\float.c" />
+    <ClCompile Include="src\format.c" />
+    <ClCompile Include="src\lpc.c" />
+    <ClCompile Include="src\lpc_intrin_sse.c" />
+    <ClCompile Include="src\lpc_intrin_sse2.c" />
+    <ClCompile Include="src\lpc_intrin_sse41.c" />
+    <ClCompile Include="src\lpc_intrin_avx2.c" />
+    <ClCompile Include="src\lpc_intrin_vsx.c" />
+    <ClCompile Include="src\md5.c" />
+    <ClCompile Include="src\memory.c" />
+    <ClCompile Include="src\metadata_iterators.c" />
+    <ClCompile Include="src\metadata_object.c" />
+    <ClCompile Include="src\stream_decoder.c" />
+    <ClCompile Include="src\stream_encoder.c" />
+    <ClCompile Include="src\stream_encoder_intrin_sse2.c" />
+    <ClCompile Include="src\stream_encoder_intrin_ssse3.c" />
+    <ClCompile Include="src\stream_encoder_intrin_avx2.c" />
+    <ClCompile Include="src\stream_encoder_framing.c" />
+    <ClCompile Include="src\window.c" />
+    <ClCompile Include="src\windows_unicode_filenames.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

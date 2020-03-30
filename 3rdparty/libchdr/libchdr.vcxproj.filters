@@ -22,12 +22,13 @@
     <ClCompile Include="src/huffman.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src/bitstream.h" />
-    <ClCompile Include="src/cdrom.h" />
-    <ClCompile Include="src/chd.h" />
     <ClCompile Include="src/coretypes.h" />
-    <ClCompile Include="src/flac.h" />
-    <ClCompile Include="src/huffman.h" />
+    <ClCompile Include="deps/crypto/md5.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="deps/crypto/sha1.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="CMakeLists.txt" />

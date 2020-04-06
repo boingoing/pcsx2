@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "AsyncFileReader.h"
+#include "ChdFileReader.h"
 #include "CompressedFileReader.h"
 #include "CsoFileReader.h"
 #include "GzippedFileReader.h"
@@ -26,6 +27,9 @@ AsyncFileReader* CompressedFileReader::GetNewReader(const wxString& fileName) {
 	}
 	if (CsoFileReader::CanHandle(fileName)) {
 		return new CsoFileReader();
+	}
+	if (ChdFileReader::CanHandle(fileName)) {
+		return new ChdFileReader();
 	}
 	// This is the one which will fail on open.
 	return NULL;
